@@ -285,7 +285,7 @@
       ];
       contract = new web3.eth.Contract(
         abi,
-        "0x30D891dE5959503E2DF006229Ce878B5B07FBf80"
+        "0xfbA6c86982Ed41EC9D340bF3e3C61e17aC87677b"
       );
       console.log(contract);
 
@@ -305,11 +305,13 @@
     }
 
     function chkPerson() {
-      if (getEventNum2() == getAnnounceNum())
-        alert("축하합니다. 당첨되셨습니다!! 오늘은 좋은일만 가득하시겠네요~");
+      if(getEventNum2() == undefined && getAnnounceNum() == undefined)
+      alert("응모해주세요");
+      else if (getEventNum2() == getAnnounceNum() && getEventNum2() != undefined && getAnnounceNum() != undefined)
+        alert("축하합니다. 당첨되셨습니다!!");
       else
         alert(
-          "아쉽게도 당첨되지 못하셨습니다. 액땜했으니 오늘 좋은일만 가득하실겁니다~"
+          "아쉽게도 당첨되지 못하셨습니다."
         );
     }
 
@@ -348,16 +350,6 @@
         .getEventNum()
         .call({ from: account })
         .then(function (result) {
-          return result;
-        });
-    }
-
-    function getAnnounceNum() {
-      contract.methods
-        .getAnnounceNum()
-        .call({ from: account })
-        .then(function (result) {
-          console.log(result);
           return result;
         });
     }
