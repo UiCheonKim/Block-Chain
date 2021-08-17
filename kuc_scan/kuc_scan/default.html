@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html class="no-js" lang="">
+  <head>
+    <!-- meta charset -->
+    <meta charset="utf-8" />
+    <!-- site title -->
+    <title>KUC DAPP</title>
+    <!-- meta description -->
+    <meta name="description" content="" />
+    <!-- mobile viwport meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- fevicon -->
+    <link rel="shortcut icon" type="image/x-icon" />
+
+    <!-- ================================
+        CSS Files
+        ================================= -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i|Open+Sans:400,600,700,800"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="css/themefisher-fonts.min.css" />
+    <link rel="stylesheet" href="css/owl.carousel.min.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/dark.css" />
+    <link id="color-changer" rel="stylesheet" href="css/colors/green.css" />
+  </head>
+
+  <body class="dark">
+    <div class="preloader">
+      <div class="loading-mask"></div>
+      <div class="loading-mask"></div>
+      <div class="loading-mask"></div>
+      <div class="loading-mask"></div>
+      <div class="loading-mask"></div>
+    </div>
+
+    <main class="site-wrapper">
+      <!-- .close -->
+      <div class="page-close2">
+        <button onclick="init()" style="width: 9em">Connect Wallet</button>
+      </div>
+      <div class="page-close2" id="connectinfo" style="margin-top: 3em">
+        응모하기전에 로그인해주세요.
+      </div>
+      <a href="#" onClick="history.back();" class="page-close"
+        ><i class="tf-ion-close"></i
+      ></a>
+      <!-- /.close -->
+
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12 col-md-6 col-lg-8">
+            <div class="page-title">
+              <h2>
+                KUC <span class="primary">DAPP</span>
+                <span class="title-bg">Ethereum</span>
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="inputmove">
+        <input type="text" placeholder="이름을 적어주세요" id="setName" />
+        <input type="text" placeholder="나이를 적어주세요" id="setAge" />
+        <input
+          type="text"
+          placeholder="시까지만 적어주세요 ex) 서울시"
+          id="setAddr"
+          style="width: 17em"
+        />
+        <br />
+        <button onclick="setEventPerson()">응모하기</button>
+        <br />
+        <button onclick="chkPerson()">당첨 확인하기</button>
+      </div>
+
+      <div>
+        <button onclick="getTotalPerson()" style="margin-left: 10%">
+          응모한 사람 조회하기
+        </button>
+        <button onclick="getEventNum()" style="margin-left: 10px">
+          번호 확인하기
+        </button>
+        <br />
+        <button
+          onclick="getAnnounceNum()"
+          style="margin-left: 10px; margin-left: 10%; margin-top: 2%"
+        >
+          관리자 전용 당첨번호 확인하기
+        </button>
+        <div style="margin-right: 15%; font-size: 5em; text-align: right">
+          <inline id="eventperson"></inline>
+        </div>
+      </div>
+
+      <!-- <div style="padding-top: 13%">
+        <div class="text-center" style="color: #86a438; font-size: 2em">
+          <span
+            class="spinner-border spinner-border-sm"
+            style="width: 3rem; height: 3rem; color: #86a438"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          Loading...
+        </div>
+      </div> -->
+    </main>
+    <!-- /.site-wrapper -->
+
+    <!-- ================================
+        JavaScript Libraries
+        ================================= -->
+    <script src="js/ethscan/web3.min.js"></script>
+    <script src="js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="js/vendor/bootstrap.min.js"></script>
+    <script src="js/jquery.easing.min.js"></script>
+    <script src="js/isotope.pkgd.min.js"></script>
+    <script src="js/jquery.nicescroll.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/jquery-validation.min.js"></script>
+    <script src="js/form.min.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+  <!-- ================================
+                Ethereum Script
+        ================================= -->
+  <script type="text/javascript">
+    let account;
+    let web3;
+    // 연결
+    async function init() {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        try {
+          // Request account access if needed
+          await window.ethereum.enable();
+          // Acccounts now exposed
+          web3.eth.getAccounts().then(function (accounts) {
+            account = accounts[0];
+            console.log("연결완료");
+            getContract();
+          });
+
+          document.getElementById("connectinfo").innerText = "연결완료";
+        } catch (error) {}
+      }
+      // Legacy dapp browsers...
+      else if (window.web3) {
+        // Use Mist/MetaMask's provider.
+        web3 = window.web3;
+        console.log("Injected web3 detected.");
+      }
+    }
+    // 컨트렉트 가져오기
+    function getContract() {
+      let abi = [
+        {
+          inputs: [],
+          stateMutability: "payable",
+          type: "constructor",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              components: [
+                {
+                  internalType: "string",
+                  name: "name",
+                  type: "string",
+                },
+                {
+                  internalType: "uint256",
+                  name: "age",
+                  type: "uint256",
+                },
+                {
+                  internalType: "string",
+                  name: "addr",
+                  type: "string",
+                },
+              ],
+              indexed: false,
+              internalType: "struct EventContract.Person",
+              name: "per",
+              type: "tuple",
+            },
+          ],
+          name: "applyEvent",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "get",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getAnnounceNum",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getEventNum",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getEventPerson",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "string",
+                  name: "name",
+                  type: "string",
+                },
+                {
+                  internalType: "uint256",
+                  name: "age",
+                  type: "uint256",
+                },
+                {
+                  internalType: "string",
+                  name: "addr",
+                  type: "string",
+                },
+              ],
+              internalType: "struct EventContract.Person",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "_name",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "_age",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "_addr",
+              type: "string",
+            },
+          ],
+          name: "setEventPerson",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ];
+      contract = new web3.eth.Contract(
+        abi,
+        "0xeFEFc78b742450Fbd35FDb2EE3315087b24eDfF0"
+      );
+      console.log(contract);
+
+      // listen event
+      contract.events.applyEvent({}, function (error, event) {
+        console.log(event);
+        // console.log(
+        //   event.returnValues.per.name +
+        //     ", " +
+        //     event.returnValues.per.age +
+        //     ", " +
+        //     event.returnValues.per.addr
+        // );
+        console.log(event.returnValues.name);
+        //event.returnValues.sender
+      });
+    }
+
+    function chkPerson() {
+      if (getEventNum2() == getAnnounceNum())
+        alert("축하합니다. 당첨되셨습니다!! 오늘은 좋은일만 가득하시겠네요~");
+      else
+        alert(
+          "아쉽게도 당첨되지 못하셨습니다. 액땜했으니 오늘 좋은일만 가득하실겁니다~"
+        );
+    }
+
+    function getAnnounceNum() {
+      contract.methods
+        .getAnnounceNum()
+        .call()
+        .then(function (result) {
+          return result;
+        });
+    }
+
+    function getTotalPerson() {
+      contract.methods
+        .get()
+        .call()
+        .then(function (result) {
+          document.getElementById("eventperson").innerText = result + " 명";
+          document.getElementById("eventperson").style = "font-size:1em";
+        });
+    }
+
+    function getEventNum() {
+      contract.methods
+        .getEventNum()
+        .call({ from: account })
+        .then(function (result) {
+          document.getElementById("eventperson").innerText =
+            "응모번호: " + result;
+          document.getElementById("eventperson").style = "font-size:1em";
+        });
+    }
+
+    function getEventNum2() {
+      contract.methods
+        .getEventNum()
+        .call({ from: account })
+        .then(function (result) {
+          return result;
+        });
+    }
+
+    function getAnnounceNum() {
+      contract.methods
+        .getAnnounceNum()
+        .call({ from: account })
+        .then(function (result) {
+          console.log(result);
+          return result;
+        });
+    }
+
+    function setEventPerson() {
+      let name = document.getElementById("setName").value;
+      let age = document.getElementById("setAge").value;
+      let addr = document.getElementById("setAddr").value;
+      contract.methods
+        .setEventPerson(name, age, addr)
+        .send({ from: account })
+        .then(function (receipt) {
+          // receipt can also be a new contract instance, when coming from a "contract.deploy({...}).send()"
+          // getEventNum();
+          console.log(receipt);
+        });
+    }
+  </script>
+</html>
+<style>
+  #inputmove {
+    margin-left: 25%;
+  }
+  #inputmove > input {
+    margin-right: 80px;
+  }
+
+  #inputmove > button {
+    margin-top: 90px;
+    margin-left: 30%;
+  }
+</style>

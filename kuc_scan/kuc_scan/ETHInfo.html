@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html class="no-js" lang="">
+  <head>
+    <!-- meta charset -->
+    <meta charset="utf-8" />
+    <!-- site title -->
+    <title>ETH 조회하기</title>
+    <!-- meta description -->
+    <meta name="description" content="" />
+    <!-- mobile viwport meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- fevicon -->
+    <link rel="shortcut icon" type="image/x-icon" />
+
+    <!-- ================================
+        CSS Files
+        ================================= -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i|Open+Sans:400,600,700,800"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/themefisher-fonts.min.css" />
+    <link rel="stylesheet" href="css/owl.carousel.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/dark.css" />
+    <link id="color-changer" rel="stylesheet" href="css/colors/red.css" />
+  </head>
+
+  <body class="dark">
+    <div class="preloader">
+      <div class="loading-mask"></div>
+      <div class="loading-mask"></div>
+      <div class="loading-mask"></div>
+      <div class="loading-mask"></div>
+      <div class="loading-mask"></div>
+    </div>
+
+    <main class="site-wrapper">
+      <!-- .close -->
+      <a href="#" onClick="history.back();" class="page-close"
+        ><i class="tf-ion-close"></i
+      ></a>
+      <!-- /.close -->
+
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12 col-md-6 col-lg-8">
+            <div class="page-title">
+              <h2>
+                Ethereum <span class="primary">조회하기</span>
+                <span class="title-bg">Ethereum</span>
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <input
+          type="text"
+          placeholder="Search by Address / Txn Hash / Block / Token / Ens"
+          id="gettxaddr"
+        />
+        <button
+          type="button"
+          style="width: 10%; height: 30px"
+          class="btn btn-light"
+          onclick="getclick()"
+        >
+          Search
+        </button>
+      </div>
+
+      <div style="margin-top: 2%; margin-left: 10%">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <!-- <th style="width: 15em">Txn Hash</th>
+              <th style="width: 6em">Method</th>
+              <th style="width: 6em">Block</th>
+              <th style="width: 6em">Age</th>
+              <th style="width: 15em">From</th>
+              <th style="width: 15em">To</th>
+              <th style="width: 6em">Value</th>
+              <th style="width: 6em">Txn Fee</th> -->
+            </tr>
+          </thead>
+        </table>
+        <div id="txinfo"></div>
+      </div>
+    </main>
+    <!-- /.site-wrapper -->
+
+    <!-- ================================
+        JavaScript
+        ================================= -->
+
+    <script src="js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="js/vendor/bootstrap.min.js"></script>
+    <script src="js/jquery.easing.min.js"></script>
+    <script src="js/isotope.pkgd.min.js"></script>
+    <script src="js/jquery.nicescroll.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/jquery-validation.min.js"></script>
+    <script src="js/form.min.js"></script>
+    <script src="js/main.js"></script>
+    <script type="text/javascript" src="js/ethscan/web3.js"></script>
+    <script type="text/javascript" src="js/ethscan/bignumber.min.js"></script>
+    <script type="text/javascript">
+      if (typeof web3 !== "undefined") {
+        web3 = new Web3(web3.currentProvider);
+      } else {
+        // set the provider you want from Web3.providers
+        web3 = new Web3(
+          new Web3.providers.HttpProvider("http://localhost:8545")
+        );
+      }
+
+      console.log(web3.version.api);
+
+      if (web3.isConnected()) console.log("연결완료");
+      else console.log("연결실패");
+
+      let accounts = web3.eth.accounts;
+      console.log(accounts);
+
+      let startfuc = 0;
+
+      function getclick() {
+        var gettxaddr = document.getElementById("gettxaddr").value;
+        console.log(gettxaddr);
+        //console.log(gettxaddr.indexOf("0x"));
+        console.log(Number.isInteger(parseInt(gettxaddr)));
+        if (
+          gettxaddr.indexOf("0x") == -1 &&
+          Number.isInteger(parseInt(gettxaddr))
+        )
+          getBlock(gettxaddr);
+        else if (gettxaddr.length > 50) getTransaction(gettxaddr);
+        else getBalance(gettxaddr);
+      }
+
+      function getBalance(gettxaddr) {
+        console.log("gbal");
+        web3.eth.getBalance(gettxaddr, function (error, bal) {
+          if (bal == null) return 0;
+          console.log(parseInt(bal));
+          document.getElementById("txinfo").innerText = parseFloat(
+            bal / Math.pow(10, 18)
+          );
+          document.getElementById("txinfo").style = "border: 2px solid black";
+        });
+      }
+
+      function getBlock(gettxaddr) {
+        console.log("gblock");
+        web3.eth.getBlock(parseInt(gettxaddr), function (error, block) {
+          if (block == null) return 0;
+          //console.log((parseInt(blockNum)));
+          document.getElementById("txinfo").innerText = JSON.stringify(block)
+            .replace(/\"|\{|\}/g, "")
+            .replace(/\,/g, "\n");
+          document.getElementById("txinfo").style = "border: 2px solid black";
+        });
+      }
+
+      function getTransaction(gettxaddr) {
+        console.log("tx");
+        //var gettxaddr = document.getElementById("gettxaddr").value;
+        web3.eth.getTransaction(gettxaddr, function (error, tx) {
+          if (tx == null) {
+            console.log("gt2");
+            return 0;
+          }
+          console.log("gt3");
+          document.getElementById("txinfo").innerText = JSON.stringify(tx)
+            .replace(/\"|\{|\}/g, "")
+            .replace(/\,/g, "\n");
+          document.getElementById("txinfo").style = "border: 2px solid black";
+        });
+      }
+    </script>
+  </body>
+</html>
+<style>
+  table {
+    border-radius: 0.3em;
+    overflow: hidden;
+  }
+  input {
+    height: 25px;
+    margin-left: 10%;
+    width: 60%;
+  }
+  thead {
+    border-bottom: 4px solid white;
+    background-color: #fa6862;
+    color: black;
+  }
+  thead > tr > th {
+    padding: 3px;
+    text-align: center;
+  }
+  tbody > tr > td {
+    padding: 10px;
+    border-bottom: 1px solid white;
+  }
+  tbody > tr:hover {
+    background-color: white;
+  }
+</style>
